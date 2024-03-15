@@ -1,0 +1,83 @@
+import cv2
+import numpy as np
+import math
+
+def getContours(img, imgContour):
+    contours, hierarchy = cv2.findContours(img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+    return contours
+
+def getTriangle(contours):
+    pass
+def getRectangle(contours):
+    pass
+
+def getDXDYDistance(shape1, shape2):
+    pass
+
+def getInstruction(rectangle, triangle):
+    pass
+
+def main():
+    # Set the fram variables
+    frameWidth = 640
+    frameHeight = 480
+
+    # Set the camera
+    cap = cv2.VideoCapture(0)
+    # Set the frame width and height
+    cap.set(3, frameWidth)
+    cap.set(4, frameHeight)
+
+    # Create a window for the parameters
+    cv2.namedWindow("Parameters")
+
+    # Create a function for the parameters
+    def empty():
+        pass
+
+    # Resize the window
+    cv2.resizeWindow("Parameters", 640, 240)
+    # Create the trackbars
+    cv2.createTrackbar("Threshold1", "Parameters", 150, 255, empty)
+    cv2.createTrackbar("Threshold2", "Parameters", 255, 255, empty)
+
+    while True:
+        success, img = cap.read()
+        imgContour = img.copy()
+
+         # Blur the image
+        imgBlur = cv2.GaussianBlur(img, (7, 7), 1)
+        # Convert the image to gray
+        imgGray = cv2.cvtColor(imgBlur, cv2.COLOR_BGR2GRAY)
+
+        # Apply the thresholds
+        threshold1 = cv2.getTrackbarPos("Threshold1", "Parameters")
+        threshold2 = cv2.getTrackbarPos("Threshold2", "Parameters")
+
+        # Apply the canny
+        imgCanny = cv2.Canny(imgGray, threshold1, threshold2)
+
+        # Create a kernel
+        kernel = np.ones((5, 5))
+        # Dilate the image
+        imgDial = cv2.dilate(imgCanny, kernel, iterations=1)
+
+        # Get the contours
+        contours = getContours(imgDial, imgContour)
+        shapeContours = getShapeContours(contours)
+        #TODO: Remove this later. Draw everything function?
+        # Draw the contours
+        cv2.drawContours(imgContour, [contours[0], contours[1]], -1, (0, 255, 0), 7)
+
+        triangle = getTriangle(contours)
+        rectangle = getRectangle(contours)
+
+        # Show the image
+        cv2.imshow("Result", imgContour)
+
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+
+
+if __name__ == "__main__":
+    main()
